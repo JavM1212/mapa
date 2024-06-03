@@ -1,6 +1,7 @@
 import geopandas as gpd
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 # Rutas de los archivos
 shapefile_path = "./shapefile/gadm41_CRI_1.shp"  # Asegúrate de proporcionar la ruta correcta
@@ -36,20 +37,27 @@ age_sex_distribution.columns = ['_'.join(map(str, col)).strip() for col in age_s
 # Unir los DataFrames usando las columnas correctas
 merged_df = gdf.merge(age_sex_distribution, left_on='NAME_1', right_index=True)
 
+# Crear una lista de colores únicos para las provincias
+colors = plt.cm.tab20.colors  # Utiliza un colormap con suficientes colores
+
+# Asignar un color a cada provincia
+merged_df['color'] = [colors[i % len(colors)] for i in range(len(merged_df))]
+
 # Crear el mapa
 fig, ax = plt.subplots(1, 1, figsize=(15, 15))
 gdf.plot(ax=ax, color='white', edgecolor='black')
 
-# Plot each province with its age and sex distribution
+# Plot each province with its unique color
 for idx, row in merged_df.iterrows():
+    province_color = row['color']
+    gdf[gdf['NAME_1'] == row['NAME_1']].plot(ax=ax, color=province_color, edgecolor='black')
     annotation = "\n".join([f"F{age}: {int(row[f'Femenino_{age}'])}" for age in range(4)] +
                            [f"M{age}: {int(row[f'Masculino_{age}'])}" for age in range(4)])
-    ax.annotate(text=annotation, 
-                xy=(row.geometry.centroid.x, row.geometry.centroid.y),
-                ha='center', fontsize=8, bbox=dict(facecolor='white', alpha=0.5, boxstyle='round,pad=0.5'))
+    plt.text(-81.9, 11 - idx*0.55, f"{row['NAME_1']}:\n{annotation}", color=province_color, 
+             fontsize=8, bbox=dict(facecolor='white', alpha=0.5, boxstyle='round,pad=0.5'))
 
 # Ajustar los límites del eje para hacer zoom
-ax.set_xlim([-86, -82])  # Ajusta estos valores según la región de interés
+ax.set_xlim([-86, -82.4])  # Ajusta estos valores según la región de interés
 ax.set_ylim([8, 11.5])  # Ajusta estos valores según la región de interés
 
 plt.title('Mapa de Costa Rica por Provincia con Distribución de Sexo y Edad')
