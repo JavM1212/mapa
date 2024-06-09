@@ -51,8 +51,14 @@ gdf.plot(ax=ax, color='white', edgecolor='black')
 for idx, row in merged_df.iterrows():
     province_color = row['color']
     gdf[gdf['NAME_1'] == row['NAME_1']].plot(ax=ax, color=province_color, edgecolor='black')
-    annotation = "\n".join([f"F{age}: {int(row[f'Femenino_{age}'])}" for age in range(4)] +
-                           [f"M{age}: {int(row[f'Masculino_{age}'])}" for age in range(4)])
+    annotation = "\n".join([f"Mujeres de 0 a 4 años: {int(row['Femenino_0'])}",
+                            f"Mujeres de 5 a 9 años: {int(row['Femenino_1'])}",
+                            f"Mujeres de 10 a 14 años: {int(row['Femenino_2'])}",
+                            f"Mujeres de 15 a 19 años: {int(row['Femenino_3'])}",
+                            f"Hombres de 0 a 4 años: {int(row['Masculino_0'])}",
+                            f"Hombres de 5 a 9 años: {int(row['Masculino_1'])}",
+                            f"Hombres de 10 a 14 años: {int(row['Masculino_2'])}",
+                            f"Hombres de 15 a 19 años: {int(row['Masculino_3'])}"])
     plt.text(-81.9, 11 - idx*0.55, f"{row['NAME_1']}:\n{annotation}", color=province_color, 
              fontsize=8, bbox=dict(facecolor='white', alpha=0.5, boxstyle='round,pad=0.5'))
 
