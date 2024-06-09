@@ -34,6 +34,17 @@ age_sex_distribution.index = age_sex_distribution.index.str.upper()
 # Aplanar el índice de age_sex_distribution
 age_sex_distribution.columns = ['_'.join(map(str, col)).strip() for col in age_sex_distribution.columns.values]
 
+# Calcular porcentajes de hombres y mujeres por provincia
+total_population = age_sex_distribution.sum(axis=1)
+total_female = age_sex_distribution.filter(like='Femenino').sum(axis=1)
+total_male = age_sex_distribution.filter(like='Masculino').sum(axis=1)
+
+percent_female = (total_female / total_population) * 100
+percent_male = (total_male / total_population) * 100
+
+age_sex_distribution['Percent_Female'] = percent_female
+age_sex_distribution['Percent_Male'] = percent_male
+
 # Unir los DataFrames usando las columnas correctas
 merged_df = gdf.merge(age_sex_distribution, left_on='NAME_1', right_index=True)
 
@@ -61,6 +72,13 @@ for idx, row in merged_df.iterrows():
                             f"Hombres de 15 a 19 años: {int(row['Masculino_3'])}"])
     plt.text(-81.9, 11 - idx*0.55, f"{row['NAME_1']}:\n{annotation}", color=province_color, 
              fontsize=8, bbox=dict(facecolor='white', alpha=0.5, boxstyle='round,pad=0.5'))
+
+# Añadir porcentajes al mapa
+for idx, row in merged_df.iterrows():
+    province_center = gdf[gdf['NAME_1'] == row['NAME_1']].geometry.centroid
+    percent_text = f"{row['Percent_Female']:.1f}% F, {row['Percent_Male']:.1f}% M"
+    plt.text(province_center.x.values[0], province_center.y.values[0], percent_text, 
+             color='black', fontsize=10, ha='center', bbox=dict(facecolor='white', alpha=0.5, boxstyle='round,pad=0.3'))
 
 # Ajustar los límites del eje para hacer zoom
 ax.set_xlim([-86, -82.4])  # Ajusta estos valores según la región de interés
